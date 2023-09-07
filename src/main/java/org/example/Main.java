@@ -12,6 +12,8 @@ public class Main {
         System.out.println(" 2 -- ajouter un livre");
         System.out.println(" 3 -- modifier un livre");
         System.out.println(" 4 -- suprimmer un livre");
+        System.out.println(" 5 -- cherher un livre");
+        System.out.println(" 6 -- les statistic  :");
         System.out.print(" ----------------------- : ");
        // System.out.print(" ");
         Scanner sc = new Scanner(System.in);
@@ -31,6 +33,10 @@ public class Main {
             case 4: Book book3 = new Book();
                 book3.deleteBook();
                 break;
+            case 5: Book book4 = new Book();
+                book4.searchBook();
+                break;
+
         }
 
 
