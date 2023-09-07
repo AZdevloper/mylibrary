@@ -28,7 +28,9 @@ public class DbConnection {
             throw new RuntimeException(e);
         }
     }*/
+
     public static Connection  getConnection() throws SQLException {
+
         Connection con = DriverManager.getConnection(url,username,password);
         return con;
     }

@@ -5,6 +5,6 @@ public class User {
     protected String name;
     protected String cin;
 
-    public User addUser(int id,String name,String cin){}
+    public void addUser(int id,String name,String cin){}
 
 }
