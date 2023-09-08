@@ -7,8 +7,8 @@ import java.util.Scanner;
 
 public class Book {
     private int Id;
-    private String Isbn;
-    private String Isbn2;
+    private int Isbn;
+  //  private String Isbn2;
     private String AuthorName;
     private String Title;
     private String Status;
@@ -16,6 +16,63 @@ public class Book {
     private int LostedQuantity;
     private int BorrowedQuantity;
     Scanner sc = new Scanner(System.in);
+
+    public int getId() {
+        return Id;
+    }
+
+    public void setId(int id) {
+        Id = id;
+    }
+
+    public String getAuthorName() {
+        return AuthorName;
+    }
+
+    public void setAuthorName(String authorName) {
+        AuthorName = authorName;
+    }
+
+    public String getTitle() {
+        return Title;
+    }
+
+    public void setTitle(String title) {
+        Title = title;
+    }
+
+    public int getIsbn() {
+        return Isbn;
+    }
+
+    public void setIsbn(int isbn) {
+        Isbn = isbn;
+    }
+
+    public int getQuantity() {
+        return Quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        Quantity = quantity;
+    }
+
+    public int getBorrowedQuantity() {
+        return BorrowedQuantity;
+    }
+
+    public void setBorrowedQuantity(int borrowedQuantity) {
+        BorrowedQuantity = borrowedQuantity;
+    }
+
+    public String getStatus() {
+        return Status;
+    }
+
+    public void setStatus(String status) {
+        Status = status;
+    }
+
     public void getAllBooks() throws SQLException {
         try(Connection con = DbConnection.getConnection();) { // try-with-resources => is using her to automatically closing the database connection;
 
@@ -42,7 +99,7 @@ public class Book {
         this.AuthorName = sc.nextLine();
 
         System.out.println("[book isbn] : ");
-        this.Isbn = sc.nextLine();
+        this.Isbn = sc.nextInt();
 
         System.out.println("[book Quantity] : ");
         this.Quantity = sc.nextInt();
@@ -55,7 +112,7 @@ public class Book {
 
         String query = "INSERT INTO books (isbn,authorName, title, quantity, lostedQuantity, borrowedQuantity) VALUES (?, ?, ?, ?, ?, ?)";
         try(Connection con  = DbConnection.getConnection();PreparedStatement ps = con.prepareStatement(query);){
-            ps.setString(1,this.Isbn);
+            ps.setInt(1,this.Isbn);
             ps.setString(2,this.Title);
             ps.setString(3,this.AuthorName);
             //ps.setString(4,this.Status);
@@ -72,10 +129,10 @@ public class Book {
     }
     public void editeBook() throws SQLException{
         System.out.println("entrer isbn de livre :");
-        this.Isbn = sc.nextLine();
+        this.Isbn = sc.nextInt();
         String query = "select * from books where isbn=?";
         try(Connection con  = DbConnection.getConnection();  PreparedStatement ps = con.prepareStatement(query);) {
-            ps.setString(1,this.Isbn);
+            ps.setInt(1,this.Isbn);
            try(ResultSet rs = ps.executeQuery()) {
 
                displayBook(rs);
@@ -118,7 +175,7 @@ public class Book {
             ps.setInt(4, quantity);
             ps.setInt(5, lostedQuantity);
             ps.setInt(6, borrowedQuantity);
-            ps.setString(7, this.Isbn);
+            ps.setInt(7, this.Isbn);
             ps.executeUpdate();
 
             int rowsUpdated = ps.executeUpdate();
@@ -135,12 +192,12 @@ public class Book {
     }
     public void deleteBook() {
         System.out.println("entrer isbn de livre :");
-        this.Isbn = sc.nextLine();
+        this.Isbn = sc.nextInt();
         String query = "DELETE FROM books WHERE isbn = ?";
 
         try (Connection con = DbConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(query)) {
-            ps.setString(1, Isbn);
+            ps.setInt(1, Isbn);
 
             int rowsDeleted = ps.executeUpdate();
             if (rowsDeleted > 0) {
@@ -180,6 +237,25 @@ public class Book {
             System.out.println("----------------------------------");
         }
     }
+    public void getReport  () throws SQLException {
+        try(Connection con = DbConnection.getConnection();) { // try-with-resources => is using her to automatically closing the database connection;
+
+            Statement st = con.createStatement();
+            //String qr = "SELECT * FROM books INNER JOIN author ON books.authorId = author.id";
+            String qr = "SELECT * FROM books";
+            ResultSet res = st.executeQuery(qr);
+            while (res.next()) {
+                System.out.println("_________________________________");
+                System.out.println("titre : " +res.getString("title") + "  |isbn : "+res.getInt("isbn") + "   | la quantity reservée : " +res.getInt("borrowedQuantity") +"  | la quantity perdu : " + res.getInt("lostedQuantity"));
+                System.out.println("_________________________________");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
 
 
 }
+// reservation
+// return book

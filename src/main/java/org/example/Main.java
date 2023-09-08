@@ -13,7 +13,8 @@ public class Main {
         System.out.println(" 3 -- modifier un livre");
         System.out.println(" 4 -- suprimmer un livre");
         System.out.println(" 5 -- cherher un livre");
-        System.out.println(" 6 -- les statistic  :");
+        System.out.println(" 6 -- voire les statistics  :");
+        System.out.println(" 7 -- fair une reservation :");
         System.out.print(" ----------------------- : ");
        // System.out.print(" ");
         Scanner sc = new Scanner(System.in);
@@ -36,7 +37,12 @@ public class Main {
             case 5: Book book4 = new Book();
                 book4.searchBook();
                 break;
-
+            case 6: Book book5 = new Book();
+                book5.getReport();
+                break;
+            case 7: Reservation r = new Reservation();
+                r.reservation();
+                break;
         }
 
 
