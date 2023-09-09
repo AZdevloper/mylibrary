@@ -37,7 +37,24 @@ public class Reservation {
     public void setId(int id){
         this.id = id;
     }
-    public void reservation() throws SQLException {
+    public Book getBook(){
+        return this.book;
+    }
+
+    public void setBook(Book book){
+        this.book = book;
+
+    }
+
+    public Borrower getBorrower() {
+        return borrower;
+    }
+
+    public void setBorrower(Borrower borrower) {
+        this.borrower = borrower;
+    }
+
+    public void createReservation() throws SQLException {
         System.out.println("---------Entrée les information pour crée une réservation -------");
 
         System.out.print("ISBN de : ");
@@ -67,7 +84,7 @@ public class Reservation {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()){
-                Book book = new Book();
+                Book book = new Book(0);
                 book.setIsbn(isbn);
                 book.setBorrowedQuantity(rs.getInt("borrowedQuantity"));
                 book.setQuantity(rs.getInt("quantity"));
@@ -110,31 +127,55 @@ public class Reservation {
 
         System.out.print("Enter ISBN of the book to return: ");
         int isbn = Integer.parseInt(sc.nextLine());
+        System.out.print("entrer le CIN d'emprunteur : ");
+        String CIN = sc.nextLine();
 
-        System.out.print("Enter the quantity to return: ");
-        int quantityToReturn = Integer.parseInt(sc.nextLine());
+        Reservation holdReservation = findHoldReservation(isbn,CIN);
 
-        // Find the reserved book by ISBN
-        Book reservedBook = findBookByIsbn(isbn);
-
-        if (reservedBook == null) {
-            System.out.println("No book with this ISBN found.");
+        if (holdReservation == null) {
+            System.out.println("le livre n'est été pas reservée dija !");
         } else {
-            int borrowedQuantity = reservedBook.getBorrowedQuantity();
+                removeHoldReservation(holdReservation);
 
-            if (borrowedQuantity >= quantityToReturn && quantityToReturn > 0) {
-                // Update the reservation record to mark the returned date
-                markReturnedDate(reservedBook.getIsbn(), quantityToReturn);
-
-                // Update the book's borrowed quantity
-                reservedBook.setBorrowedQuantity(borrowedQuantity - quantityToReturn);
-                updateBookBorrowedQuantity(reservedBook);
-
-                System.out.println("Book returned successfully.");
-            } else {
-                System.out.println("Invalid quantity to return or book not reserved.");
-            }
         }
+    }
+
+    public Reservation findHoldReservation(int isbn,String CIN){
+
+        String qr = "SELECT * FROM reservation WHERE bookIsbn = ? and borrowerCin = ? ";
+        try(Connection con = DbConnection.getConnection(); PreparedStatement ps = con.prepareStatement(qr)){
+            ps.setInt(1,isbn);
+            ps.setString(2,CIN);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()){
+                Reservation reservation = new Reservation();
+                reservation.book = new Book(isbn);
+                reservation.borrower =  new Borrower(CIN);
+                return reservation;
+            }else{
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void removeHoldReservation(Reservation holdReservation){
+        String qr = "DELETE FROM reservation WHERE bookIsbn = ? and borrowerCin = ? ";
+        try(Connection con = DbConnection.getConnection(); PreparedStatement ps = con.prepareStatement(qr)){
+            ps.setInt(1,holdReservation.book.getIsbn());
+            ps.setString(2,holdReservation.borrower.getCin());
+            int rs = ps.executeUpdate();
+
+            if (rs >0 ){
+                System.out.println("reservation est supprimer avec succee !");
+            }else{
+                System.out.println("une error est survenu lors de la supprition !");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
     //ajouter trigger pour changer status;
 }

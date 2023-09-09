@@ -1,10 +1,18 @@
 package org.example;
 
 public class User {
-    protected int id;
-    protected String name;
-    protected String cin;
+    protected int Id;
+    protected String Name;
+    protected String Cin;
 
-    public void addUser(int id,String name,String cin){}
+    public String getCin() {
+        return Cin;
+    }
+
+    public void setCin(String cin) {
+        Cin = cin;
+    }
+
+    public void addUser(int id, String name, String cin){}
 
 }

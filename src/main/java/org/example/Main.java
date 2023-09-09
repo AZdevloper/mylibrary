@@ -15,6 +15,7 @@ public class Main {
         System.out.println(" 5 -- cherher un livre");
         System.out.println(" 6 -- voire les statistics  :");
         System.out.println(" 7 -- fair une reservation :");
+        System.out.println(" 8 -- return le livre :");
         System.out.print(" ----------------------- : ");
        // System.out.print(" ");
         Scanner sc = new Scanner(System.in);
@@ -22,26 +23,22 @@ public class Main {
 
         switch ( choice){
 
-            case 1: Book book = new Book();
-                    book.getAllBooks();
+            case 1: new Book(0).getAllBooks();
+
                     break;
-            case 2: Book book1 = new Book();
-                book1.add();
+            case 2: new Book(0).add();
                 break;
-            case 3: Book book2 = new Book();
-                book2.editeBook();
+            case 3:  new Book(0).editeBook();
                 break;
-            case 4: Book book3 = new Book();
-                book3.deleteBook();
+            case 4: new Book(0).deleteBook();
                 break;
-            case 5: Book book4 = new Book();
-                book4.searchBook();
+            case 5: new Book(0).searchBook();
                 break;
-            case 6: Book book5 = new Book();
-                book5.getReport();
+            case 6: new Book(0).getReport();
                 break;
-            case 7: Reservation r = new Reservation();
-                r.reservation();
+            case 7: new Reservation().createReservation();
+                break;
+            case 8: new Reservation().returnBook();
                 break;
         }
 

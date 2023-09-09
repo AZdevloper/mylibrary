@@ -72,6 +72,10 @@ public class Book {
     public void setStatus(String status) {
         Status = status;
     }
+public  Book(int isbn){
+        this.Isbn = isbn;
+
+}
 
     public void getAllBooks() throws SQLException {
         try(Connection con = DbConnection.getConnection();) { // try-with-resources => is using her to automatically closing the database connection;
