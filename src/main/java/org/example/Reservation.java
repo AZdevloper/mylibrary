@@ -74,7 +74,7 @@ public class Reservation {
         }else if (reservedBook.getQuantity() - reservedBook.getBorrowedQuantity() < quantity || quantity == 0){
             System.out.println(" ==> la quantity demanndée est pas disponible !");
 
-        }else creatReservation(reservedBook,cin,quantity);
+        }else saveReservation(reservedBook,cin,quantity);
 
     }
     public Book findBookByIsbn(int isbn){
@@ -99,7 +99,7 @@ public class Reservation {
         }
 
     }
-    private void creatReservation(Book reservedBook, String cin, int quantity) throws SQLException {
+    private void saveReservation(Book reservedBook, String cin, int quantity) throws SQLException {
         try (Connection con = DbConnection.getConnection();
              PreparedStatement ps = con.prepareStatement("INSERT INTO reservation (bookIsbn, borrowerCin, quantity,reservationDate) VALUES (?, ?,?, ?)")) {
 
