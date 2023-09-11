@@ -1,4 +1,4 @@
-package org.example;
+package org.entities;
 
 import Utils.MenuUtils;
 import Utils.MessageUtils;
@@ -27,12 +27,13 @@ public class Main {
             System.out.println(" 4 -- Suprimmer un livre.");
             System.out.println(" 5 -- Cherher par un livre.");
             System.out.println(" 6 -- Voire les statistics.");
-            System.out.println(" 7 -- Fair une réservation.");
+            System.out.println(" 7 -- réserver un livre.");
             System.out.println(" 8 -- Retourner le livre.");
+            System.out.println(" 9 -- consenltée les livres perdu .");
             System.out.println(" 0 -- Sortie. ");
             MessageUtils.showMessage("_________________________","info");
 
-            System.out.print("enter votre choise : ");
+            System.out.print("entrer votre choise : ");
              String scanChoice = sc.nextLine();
             if(ConversionUtils.isInteger(scanChoice)){
 
@@ -55,6 +56,8 @@ public class Main {
                     break;
                 case 8: new Reservation().returnBook();
                     break;
+                    case 9: new Book(0).checkForLostBooks();
+                        break;
                 case 0:
                     System.out.println("Thla al3chir");
                     break;

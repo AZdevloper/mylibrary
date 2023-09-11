@@ -1,4 +1,4 @@
-package org.example;
+package org.entities;
 
 import java.sql.*;
 import java.sql.Connection;

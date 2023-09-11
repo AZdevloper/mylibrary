@@ -1,4 +1,8 @@
-package org.example;
+package org.entities;
+
+import Utils.ConversionUtils;
+import Utils.MenuUtils;
+import Utils.MessageUtils;
 
 import java.sql.*;
 import java.util.Date;
@@ -55,26 +59,56 @@ public class Reservation {
     }
 
     public void createReservation() throws SQLException {
-        System.out.println("---------Entrée les information pour crée une réservation -------");
+        boolean valid = true;
+        int isbn;
+        int quantity;
+        String cin;
+        do {
+            MessageUtils.showMessage("---------Entrée les information pour crée une réservation -------", "info");
 
-        System.out.print("ISBN de : ");
-        int isbn = Integer.parseInt(sc.nextLine()) ;
+            System.out.print("ISBN de : ");
+            String Isbn = sc.nextLine();
+            if (Isbn.isBlank() || !ConversionUtils.isInteger(Isbn)){
+                MessageUtils.showMessage("le isbn doit etre un nombre", "error");
+                continue;
+            }else{
+                isbn = Integer.parseInt(Isbn);
+            }
 
-        System.out.print(" la quantitée à reserée : ");
-        int quantity = Integer.parseInt(sc.nextLine()) ;
+            System.out.print("la quantitée à reservée : ");
+             String Quantity = sc.nextLine();
+            if (Quantity.isBlank() || !ConversionUtils.isInteger(Quantity)){
+                MessageUtils.showMessage("l quantité doit etre un nombre", "error");
+                continue;
+            }if (Integer.parseInt(Quantity) <= 0){
+                MessageUtils.showMessage("l quantité ne peu pas etre zéro", "error");
+                continue;
+            }else {
+                quantity = Integer.parseInt(Quantity);
 
-        System.out.print("cin de d'emprunteur : ");
-        String cin = sc.nextLine();
+            }
 
-        Book reservedBook = findBookByIsbn(isbn);
-        if (reservedBook == null ){
-            System.out.println(" ==> pas de livre avec cette ISBN !");
-        }else if( !reservedBook.getStatus().equals("available") ){
-            System.out.println("==> ce  livre est pas disponible mantenent !");
-        }else if (reservedBook.getQuantity() - reservedBook.getBorrowedQuantity() < quantity || quantity == 0){
-            System.out.println(" ==> la quantity demanndée est pas disponible !");
+            System.out.print("cin de d'emprunteur : ");
+              cin = sc.nextLine();
 
-        }else saveReservation(reservedBook,cin,quantity);
+            if (cin.isBlank() || ConversionUtils.isInteger(cin)){
+                MessageUtils.showMessage("le CIN doit etre une chaine des caractère ", "error");
+
+            }else{
+                MessageUtils.showMessage("en coure ...", "info");
+
+                Book reservedBook = findBookByIsbn(isbn);
+                if (reservedBook == null ){
+                    MessageUtils.showMessage(" pas de livre avec cette ISBN !","error");
+                }else if( !reservedBook.getStatus().equals("available") ){
+                    MessageUtils.showMessage(" ce  livre est pas disponible mantenent !","error");
+                }else if (reservedBook.getQuantity() - reservedBook.getBorrowedQuantity() < quantity || quantity == 0){
+                    MessageUtils.showMessage("la quantity demanndée est pas disponible !","error");
+
+                }else saveReservation(reservedBook,cin,quantity);
+                valid = false;
+            }
+        }while (valid);
 
     }
     public Book findBookByIsbn(int isbn){
@@ -113,31 +147,51 @@ public class Reservation {
             int rowAffected  =  ps.executeUpdate();
 
             if (rowAffected > 0){
-                System.out.println("reservation a eté crièr avec succée ");
+                MessageUtils.showMessage("reservation a eté crièr avec succée ","success");
+
             }else {
-                System.out.println("une error est suvenu ");
+                MessageUtils.showMessage("une error est suvenu ","error");
             }
         }catch (SQLException e ){
-            System.out.println(e.getMessage());
+            MessageUtils.showMessage(e.getMessage(),"error");
         }
     }
 
     public void returnBook() throws SQLException {
-        System.out.println("--------- Return a Book ---------");
+        boolean valid = true;
+        do {
 
-        System.out.print("Enter ISBN of the book to return: ");
-        int isbn = Integer.parseInt(sc.nextLine());
-        System.out.print("entrer le CIN d'emprunteur : ");
-        String CIN = sc.nextLine();
+            MessageUtils.showMessage("--------- Retourner de livre  ---------","info");
 
-        Reservation holdReservation = findHoldReservation(isbn,CIN);
+            System.out.print("Enter ISBN of the book to return: ");
+            String isbn =sc.nextLine();
+            int Isbn;
 
-        if (holdReservation == null) {
-            System.out.println("le livre n'est été pas reservée dija !");
-        } else {
+            if (isbn.isBlank() || !ConversionUtils.isInteger(isbn)){
+                MessageUtils.showMessage("le isbn doit etre un nombre", "error");
+                continue;
+            }else{
+                Isbn = Integer.parseInt(isbn);
+            }
+
+            System.out.print("entrer le CIN d'emprunteur : ");
+            String cin = sc.nextLine();
+
+            if (cin.isBlank() || ConversionUtils.isInteger(cin)){
+                MessageUtils.showMessage("le CIN doit etre une chaine des caractère ", "error");
+                continue;
+            }
+
+            Reservation holdReservation = findHoldReservation(Isbn, cin);
+
+            if (holdReservation == null) {
+                MessageUtils.showMessage("le livre n'est été pas reservée dija !","error");
+            } else {
                 removeHoldReservation(holdReservation);
+                valid = false;
+            }
+        }while(valid);
 
-        }
     }
 
     public Reservation findHoldReservation(int isbn,String CIN){
@@ -168,9 +222,11 @@ public class Reservation {
             int rs = ps.executeUpdate();
 
             if (rs >0 ){
-                System.out.println("reservation est supprimer avec succee !");
+                MessageUtils.showMessage("reservation est supprimer avec succee !","success");
+                MenuUtils.showMenu();
             }else{
-                System.out.println("une error est survenu lors de la supprition !");
+                MessageUtils.showMessage("une error est survenu lors de la supprition !","error");
+                MenuUtils.showMenu();
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -179,3 +235,6 @@ public class Reservation {
     }
     //ajouter trigger pour changer status;
 }
+//perdu
+//disponible
+//emprnted
