@@ -29,7 +29,7 @@ public class Main {
             System.out.println(" 6 -- Voire les statistics.");
             System.out.println(" 7 -- réserver un livre.");
             System.out.println(" 8 -- Retourner le livre.");
-            System.out.println(" 9 -- consenltée les livres perdu .");
+            System.out.println(" 9 -- consultée les livres perdu .");
             System.out.println(" 0 -- Sortie. ");
             MessageUtils.showMessage("_________________________","info");
 
@@ -59,7 +59,7 @@ public class Main {
                     case 9: new Book(0).checkForLostBooks();
                         break;
                 case 0:
-                    System.out.println("Thla al3chir");
+                    System.exit(1);
                     break;
                 default:
                     System.out.println("ce choix est pas disponible");

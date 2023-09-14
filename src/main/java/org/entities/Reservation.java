@@ -21,15 +21,9 @@ public class Reservation {
     public Book getBookId() {
         return book;
     }
-
     public void setBookId(Book bookId) {
         this.book = bookId;
     }
-
-    public int getId(){
-        return id;
-    }
-
     public int getQuantity() {
         return Quantity;
     }
@@ -37,28 +31,22 @@ public class Reservation {
     public void setQuantity(int quantity) {
         Quantity = quantity;
     }
-
-    public void setId(int id){
-        this.id = id;
-    }
     public Book getBook(){
         return this.book;
     }
-
     public void setBook(Book book){
         this.book = book;
-
     }
-
     public Borrower getBorrower() {
         return borrower;
     }
-
     public void setBorrower(Borrower borrower) {
         this.borrower = borrower;
     }
-
     public void createReservation() throws SQLException {
+        Book book = new Book(0);
+        book.getAllBooks();
+
         boolean valid = true;
         int isbn;
         int quantity;
@@ -66,6 +54,7 @@ public class Reservation {
         do {
             MessageUtils.showMessage("---------Entrée les information pour crée une réservation -------", "info");
 
+            sc.reset();
             System.out.print("ISBN de : ");
             String Isbn = sc.nextLine();
             if (Isbn.isBlank() || !ConversionUtils.isInteger(Isbn)){
@@ -75,39 +64,57 @@ public class Reservation {
                 isbn = Integer.parseInt(Isbn);
             }
 
-            System.out.print("la quantitée à reservée : ");
-             String Quantity = sc.nextLine();
-            if (Quantity.isBlank() || !ConversionUtils.isInteger(Quantity)){
-                MessageUtils.showMessage("l quantité doit etre un nombre", "error");
-                continue;
-            }if (Integer.parseInt(Quantity) <= 0){
-                MessageUtils.showMessage("l quantité ne peu pas etre zéro", "error");
-                continue;
-            }else {
-                quantity = Integer.parseInt(Quantity);
+            //
 
-            }
-
-            System.out.print("cin de d'emprunteur : ");
-              cin = sc.nextLine();
+            System.out.print("CIN de d'emprunteur : ");
+            cin = sc.nextLine();
 
             if (cin.isBlank() || ConversionUtils.isInteger(cin)){
                 MessageUtils.showMessage("le CIN doit etre une chaine des caractère ", "error");
-
             }else{
-                MessageUtils.showMessage("en coure ...", "info");
+               if ( new  User().checkIfUserExist(cin)){
+                   System.out.print("la quantitée à reservée : ");
+                   String Quantity = sc.nextLine();
 
-                Book reservedBook = findBookByIsbn(isbn);
-                if (reservedBook == null ){
-                    MessageUtils.showMessage(" pas de livre avec cette ISBN !","error");
-                }else if( !reservedBook.getStatus().equals("available") ){
-                    MessageUtils.showMessage(" ce  livre est pas disponible mantenent !","error");
-                }else if (reservedBook.getQuantity() - reservedBook.getBorrowedQuantity() < quantity || quantity == 0){
-                    MessageUtils.showMessage("la quantity demanndée est pas disponible !","error");
+                   if (Quantity.isBlank() || !ConversionUtils.isInteger(Quantity)){
+                       MessageUtils.showMessage("la quantité doit etre un nombre", "error");
+                       continue;
+                   }if (Integer.parseInt(Quantity) <= 0){
+                       MessageUtils.showMessage("la quantité ne peu pas etre zéro", "error");
 
-                }else saveReservation(reservedBook,cin,quantity);
-                valid = false;
+                   }else {
+                       quantity = Integer.parseInt(Quantity);
+                       Book reservedBook = findBookByIsbn(isbn);
+                       if (reservedBook == null ){
+                           MessageUtils.showMessage(" pas de livre avec cette ISBN !","error");
+                       }else if( !reservedBook.getStatus().equals("disponible") ){
+                           MessageUtils.showMessage(" ce  livre est pas disponible mantenent !","error");
+                       }else if (reservedBook.getQuantity() - reservedBook.getBorrowedQuantity() < quantity || quantity == 0){
+                           MessageUtils.showMessage("la quantity demanndée est pas disponible !","error");
+
+                       }else {
+                           MessageUtils.showMessage("en coure ...", "info");
+                           saveReservation(reservedBook,cin,quantity);}
+                            valid = false;
+                   }
+
+               }else {
+                   MessageUtils.showMessage("ce utilisature est pas enregestrer, Tapper < 1 > pour l'enregistrer | Tapper < 2 > pour retourner au menu prinsipale  ?","error");
+                   int selection = sc.nextInt();
+                   if (selection == 1){
+                       new User().addUser();
+
+                   }else if(selection == 2){
+                       MenuUtils.showMenu();
+                   }
+               }
+
+
             }
+
+            //
+
+
         }while (valid);
 
     }
@@ -150,31 +157,30 @@ public class Reservation {
                 MessageUtils.showMessage("reservation a eté crièr avec succée ","success");
 
             }else {
-                MessageUtils.showMessage("une error est suvenu ","error");
+                MessageUtils.showMessage("une error est survenu ","error");
             }
         }catch (SQLException e ){
             MessageUtils.showMessage(e.getMessage(),"error");
         }
     }
-
     public void returnBook() throws SQLException {
         boolean valid = true;
         do {
 
             MessageUtils.showMessage("--------- Retourner de livre  ---------","info");
 
-            System.out.print("Enter ISBN of the book to return: ");
+            System.out.print(" ISBN : ");
             String isbn =sc.nextLine();
             int Isbn;
 
             if (isbn.isBlank() || !ConversionUtils.isInteger(isbn)){
-                MessageUtils.showMessage("le isbn doit etre un nombre", "error");
+                MessageUtils.showMessage(" le isbn doit etre un nombre ", "error");
                 continue;
             }else{
                 Isbn = Integer.parseInt(isbn);
             }
 
-            System.out.print("entrer le CIN d'emprunteur : ");
+            System.out.print(" entrer le CIN d'emprunteur : ");
             String cin = sc.nextLine();
 
             if (cin.isBlank() || ConversionUtils.isInteger(cin)){
@@ -193,7 +199,6 @@ public class Reservation {
         }while(valid);
 
     }
-
     public Reservation findHoldReservation(int isbn,String CIN){
 
         String qr = "SELECT * FROM reservation WHERE bookIsbn = ? and borrowerCin = ? ";
@@ -233,8 +238,5 @@ public class Reservation {
         }
 
     }
-    //ajouter trigger pour changer status;
+
 }
-//perdu
-//disponible
-//emprnted

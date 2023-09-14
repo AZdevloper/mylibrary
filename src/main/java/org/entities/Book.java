@@ -7,74 +7,73 @@ import Utils.StatusUtils;
 
 import java.sql.*;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Scanner;
 
 public class Book {
-    private int Id;
-    private int Isbn;
-    private String AuthorName;
-    private String Title;
-    private String Status;
-    private int Quantity;
-    private int LostedQuantity;
-    private int BorrowedQuantity;
+    private int id;
+    private int isbn;
+    private String authorName;
+    private String title;
+    private String status;
+    private int quantity;
+    private int lostedQuantity;
+    private int borrowedQuantity;
     Scanner sc = new Scanner(System.in);
 
     public int getId() {
-        return Id;
+        return id;
     }
 
     public void setId(int id) {
-        Id = id;
+        this.id = id;
     }
 
     public String getAuthorName() {
-        return AuthorName;
+        return authorName;
     }
 
     public void setAuthorName(String authorName) {
-        AuthorName = authorName;
+        this.authorName = authorName;
     }
 
     public String getTitle() {
-        return Title;
+        return title;
     }
 
     public void setTitle(String title) {
-        Title = title;
+        this.title = title;
     }
 
     public int getIsbn() {
-        return Isbn;
+        return isbn;
     }
 
     public void setIsbn(int isbn) {
-        Isbn = isbn;
+        this.isbn = isbn;
     }
     public int getQuantity() {
-        return Quantity;
+        return quantity;
     }
     public void setQuantity(int quantity) {
-        Quantity = quantity;
+        this.quantity = quantity;
     }
     public int getBorrowedQuantity() {
-        return BorrowedQuantity;
+        return borrowedQuantity;
     }
 
     public void setBorrowedQuantity(int borrowedQuantity) {
-        BorrowedQuantity = borrowedQuantity;
+        this.borrowedQuantity = borrowedQuantity;
     }
 
     public String getStatus() {
-        return Status;
+        return status;
     }
 
     public void setStatus(String status) {
-        Status = status;
+        this.status = status;
     }
     public  Book(int isbn){
-        this.Isbn = isbn;
+        this.isbn = isbn;
 
 }
     public void getAllBooks() throws SQLException {
@@ -85,9 +84,11 @@ public class Book {
             String qr = "SELECT * FROM books";
             ResultSet res = st.executeQuery(qr);
             while (res.next()) {
-                System.out.println("_________________________________");
-                System.out.println("title : " +res.getString("title") +"  |nom d'author : "+ res.getString("authorName") + "  |isbn : "+res.getInt("isbn"));
-                System.out.println("_________________________________");
+                int availableQuantity = res.getInt("quantity") - res.getInt("borrowedQuantity");
+
+                MessageUtils.showMessage("____________________________________________________________________________________________________","info");
+                System.out.println("\u001B[31m" + "|" +"\u001B[0m" + "titre : " +res.getString("title") + "\u001B[31m" + "  |" +"\u001B[0m" + " isbn : "+ res.getInt("isbn") + "\u001B[31m" + "  |" +"\u001B[0m" + "  la quantité disponible : "+ availableQuantity + "\u001B[31m" + "  |" +"\u001B[0m" + "    la quantity reservée : " +res.getInt("borrowedQuantity")+ "\u001B[31m" + "  |" +"\u001B[0m" + "  Status : " +res.getString("status")  );
+                MessageUtils.showMessage("----------------------------------------------------------------------------------------------------","info");
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -109,30 +110,30 @@ public class Book {
             MessageUtils.showMessage("le titre ne peu pas etre un nombre", "error");
             continue;
         }else{
-            this.Title = title;
+            this.title = title;
         }
 
         System.out.print("[auteur] : ");
         String auteur = sc.nextLine();
 
         if (auteur.isBlank()){
-            MessageUtils.showMessage("le auteur ne peu pas etre null", "error");
+            MessageUtils.showMessage("l'auteur ne peu pas etre null", "error");
             continue;
         }if (ConversionUtils.isInteger(auteur)){
-            MessageUtils.showMessage("le auteur ne peu pas etre un nombre", "error");
+            MessageUtils.showMessage("l'auteur ne peu pas etre un nombre", "error");
             continue;
         }else{
-            this.AuthorName = auteur;
+            this.authorName = auteur;
         }
 
         System.out.print("[ ISBN ] : ");
         String isbn = sc.nextLine();
 
         if (isbn.isBlank() || !ConversionUtils.isInteger(isbn)){
-            MessageUtils.showMessage("le isbn doit etre un nombre", "error");
+            MessageUtils.showMessage("ISBN doit etre un nombre", "error");
             continue;
         }else{
-            this.Isbn = Integer.parseInt(isbn);
+            this.isbn = Integer.parseInt(isbn);
         }
 
         System.out.print("[ Quantité ] : ");
@@ -145,7 +146,7 @@ public class Book {
         }
 
         else{
-            this.Quantity = Integer.parseInt(quantity);
+            this.quantity = Integer.parseInt(quantity);
             valid = false;
         }
 
@@ -156,12 +157,10 @@ public class Book {
 
         String query = "INSERT INTO books (isbn,authorName, title, quantity) VALUES (?, ?, ?, ?)";
         try(Connection con  = DbConnection.getConnection();PreparedStatement ps = con.prepareStatement(query);){
-            ps.setInt(1,this.Isbn);
-            ps.setString(2,this.Title);
-            ps.setString(3,this.AuthorName);
-            ps.setInt(4,this.Quantity);
-
-
+            ps.setInt(1,this.isbn);
+            ps.setString(2,this.title);
+            ps.setString(3,this.authorName);
+            ps.setInt(4,this.quantity);
 
             int rs =  ps.executeUpdate();
 
@@ -169,67 +168,98 @@ public class Book {
                 MessageUtils.showMessage("le neuvau livre est ajouter avec succée ", "success");
                 MenuUtils.showMenu();
             }
-
         }catch(SQLException e ){
             MessageUtils.showMessage("une error est survenu : "+e.getMessage(),"error");
-
+            MenuUtils.showMenu();
         }
-//        catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
+
     }
-    public void editeBook() throws SQLException{
-        System.out.print("entrer ISBN de livre :");
-        this.Isbn = sc.nextInt();
+    public void editeBook() throws SQLException {
+
+        boolean valid  = true;
+
+        do {
+            System.out.print("entrer ISBN de livre à modifier : ");
+            String Isbn = sc.nextLine();
+            if (Isbn.isBlank() || !ConversionUtils.isInteger(Isbn)){
+                MessageUtils.showMessage("ISBN doit etre un nombre", "error");
+            }else{
+                this.isbn = Integer.parseInt(Isbn);
+                valid = false;
+            }
+        }while(valid);
+
         String query = "select * from books where isbn=?";
         try(Connection con  = DbConnection.getConnection();  PreparedStatement ps = con.prepareStatement(query);) {
-            ps.setInt(1,this.Isbn);
+            ps.setInt(1,isbn);
            try(ResultSet rs = ps.executeQuery()) {
 
                displayBook(rs);
            }catch(SQLException e ){
                System.out.println(e.getMessage());
            }
-
         }catch(SQLException e){
                 System.out.println(e.getMessage());
             }
-       MessageUtils.showMessage("------------Changer les informations de ce livre ------------","info");
 
-        sc.nextLine();
+        valid = true;
+        do {
+        MessageUtils.showMessage("------------Changer les informations de ce livre ------------", "info");
+
         System.out.print("[ titre] : ");
         String title = sc.nextLine();
-        if (!title.equals("") && !title.isBlank()) this.Title = title;
+        if (ConversionUtils.isInteger(title)){
+            MessageUtils.showMessage("le titre ne peu pas etre un nombre", "error");
+            continue;
+        }else{
+            this.title = title;
+        }
+//
+        System.out.print("[auteur] : ");
+        String auteur = sc.nextLine();
+        if  (ConversionUtils.isInteger(auteur)){
+            MessageUtils.showMessage("l'auteur ne peu pas etre un nombre", "error");
+            continue;
+        }else{
+            this.authorName = auteur;
+        }
+//
+        System.out.print("[ le livre status ['disponible' ou 'indisponible' ] il'est \"disponible\" par defaut ] : ");
+        String status = sc.nextLine();
+        if (StatusUtils.isValidStatus(status)){
+            this.status = status;
 
-        System.out.print("[ auteur ] : ");
-       String authorName = sc.nextLine();
-        if (!authorName.equals("") && !authorName.isBlank()) this.AuthorName = authorName;
-
-        System.out.print("[ le livre status est \"disponible\" par defaut ] : ");
-       String status = sc.nextLine();
-        if (StatusUtils.isValidStatus(status))
-            this.Status = status;
-        else
-            MenuUtils.showMenu();
-
+        }else{
+            MessageUtils.showMessage("status pas validée. le livre status ['disponible' ou 'indisponible' ]","error");
+            continue;
+        }
+//
         System.out.print("[ Quantité ] : ");
-        String Quantity = sc.nextLine();
-        if (ConversionUtils.isInteger(Quantity)){
-            this.Quantity = Integer.parseInt(Quantity);
-        }
-
+        String quantity = sc.nextLine();
+        if (!ConversionUtils.isInteger(quantity)){
+            MessageUtils.showMessage("l quantité doit etre un nombre", "error");
+            continue;
+        }if (Integer.parseInt(quantity) <= 0){
+            MessageUtils.showMessage("l quantité ne peu pas etre zéro", "error");
+            continue;
+        }else this.quantity =Integer.parseInt(quantity);
+//
         System.out.print("[ la Quantité perdu] : ");
-        String lostedQuantity = sc.nextLine();
-        if (ConversionUtils.isInteger(lostedQuantity)){
-            this.LostedQuantity = Integer.parseInt(lostedQuantity);
+        String lostQuantity = sc.nextLine();
+        if (!lostQuantity.isBlank() && ConversionUtils.isInteger(lostQuantity)){
+            this.lostedQuantity = Integer.parseInt(lostQuantity);
+
+        }else if(!lostQuantity.isBlank() && !ConversionUtils.isInteger(lostQuantity)){
+            MessageUtils.showMessage("l quantité doit etre un nombre", "error");
+             continue;
+        }else if (lostQuantity.isBlank()){
+            this.lostedQuantity = Integer.parseInt(lostQuantity);
         }
 
-        System.out.print("[ la Quantité empruntée ] : ");
-        String borrowedQuantity = sc.nextLine();
-        if (ConversionUtils.isInteger(borrowedQuantity)){
-            this.BorrowedQuantity = Integer.parseInt(borrowedQuantity);
-        }
+        valid = false;
 
+
+}while(valid);
         updateBook();
         MenuUtils.showMenu();
         }
@@ -237,49 +267,50 @@ public class Book {
 
         String query = "UPDATE books SET authorName = ?, title = ?, status = ?, quantity = ?, lostedQuantity = ?, borrowedQuantity = ? WHERE isbn = ?";
         try(Connection con  = DbConnection.getConnection();PreparedStatement ps = con.prepareStatement(query);){
-            ps.setString(1, AuthorName);
-            ps.setString(2, Title);
-            ps.setString(3, Status);
-            ps.setInt(4, Quantity);
-            ps.setInt(5, LostedQuantity);
-            ps.setInt(6, BorrowedQuantity);
-            ps.setInt(7, Isbn);
+            ps.setString(1, authorName);
+            ps.setString(2, title);
+            ps.setString(3, status);
+            ps.setInt(4, quantity);
+            ps.setInt(5, lostedQuantity);
+            ps.setInt(6, borrowedQuantity);
+            ps.setInt(7, isbn);
+
            int rs = ps.executeUpdate();
-            while(rs == 0){
+
+           while(rs == 0){
                 MessageUtils.showMessage(".", "error");
             }
-
             int rowsUpdated = ps.executeUpdate();
             if (rowsUpdated > 0) {
-                MessageUtils.showMessage("Book with ISBN " + this.Isbn + " updated successfully.","success");
+                MessageUtils.showMessage(" le livre avec cette ISBN " + this.isbn + " est modifier avec succée.","success");
             } else {
-                System.out.println("No book found with ISBN " + this.Isbn + ". No updates performed.");
+                MessageUtils.showMessage("No book found with ISBN " + this.isbn + ". No updates performed.","error");
             }
         }catch(SQLException e ){
             System.out.println(e.getMessage());
         }
     }
     public void deleteBook() {
-        System.out.println("entrer isbn de livre :");
-        this.Isbn = sc.nextInt();
+        System.out.print("entrer isbn de livre :");
+        this.isbn = sc.nextInt();
         String query = "DELETE FROM books WHERE isbn = ?";
 
         try (Connection con = DbConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(query)) {
-            ps.setInt(1, Isbn);
+            ps.setInt(1, isbn);
 
             int rowsDeleted = ps.executeUpdate();
             if (rowsDeleted > 0) {
-                System.out.println("Book with ISBN " + Isbn + " deleted successfully.");
+                MessageUtils.showMessage(" le livre avec ce ISBN " + isbn + " est supprimer avec succée.","success");
             } else {
-                System.out.println("No book found with ISBN " + Isbn + ". No deletions performed.");
+                MessageUtils.showMessage(" pas de livre avec cette ISBN " + isbn, "error");
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
     }
     public void searchBook() throws SQLException {
-        System.out.println("Entrer Titre, ou Auteur de livre :");
+        System.out.print("Entrer Titre, ou Auteur de livre : ");
         String param = sc.nextLine();
 
         String query = "SELECT * FROM books WHERE AuthorName LIKE ? OR title LIKE ?";
@@ -301,9 +332,13 @@ public class Book {
     }
     public void displayBook(ResultSet res) throws SQLException {
         while (res.next()){
-            System.out.println("_________________________________");
+            /*System.out.println("_________________________________");
             System.out.println("Titre : " +res.getString("title") +"  | Author : "+ res.getString("authorName") + "  | ISBN : "+res.getInt("isbn"));
-            System.out.println("----------------------------------");
+            System.out.println("----------------------------------");*/
+String redLine = "\u001B[31m" + " | " +"\u001B[0m";
+            MessageUtils.showMessage("____________________________________________________________________________________________________","info");
+            System.out.println(redLine +"titre : " +res.getString("title") + redLine +  " ISBN : "+res.getInt("isbn") +redLine+" Auteur : "+res.getString("authorName")+redLine+" status : "+res.getString("status")+ redLine +" quantitée : "+ res.getInt("quantity")+redLine+"   la quantité perdu : " + res.getInt("lostedQuantity"));
+            MessageUtils.showMessage("----------------------------------------------------------------------------------------------------","info");
         }
     }
     public void getReport  () throws SQLException {
@@ -357,7 +392,6 @@ public class Book {
             System.out.println(e.getMessage());
         }
     }
-
     public void addToLostQuantity(int lostquantity, int isbn) {
         String query = "UPDATE books SET lostedQuantity = lostedQuantity + ? WHERE isbn = ?";
 
@@ -368,17 +402,13 @@ public class Book {
 
             int rowsUpdated = ps.executeUpdate();
             if (rowsUpdated > 0) {
-                System.out.println("Lost quantity updated successfully for ISBN " + isbn);
+                MessageUtils.showMessage(" la quantity perdu est modifier avec succée pour ce ISBN  : " + isbn, "success");
             } else {
-                System.out.println("No book found with ISBN " + isbn + ". Lost quantity not updated.");
+                MessageUtils.showMessage(" pas de livre avec cette ISBN : " + isbn ,"error");
             }
         } catch (SQLException e) {
-            System.out.println("Error updating lost quantity: " + e.getMessage());
+            MessageUtils.showMessage("une error est survenu : " + e.getMessage(),"error");
         }
     }
-
-
-
-
 }
 

@@ -2,6 +2,6 @@ package Utils;
 
 public class StatusUtils {
 public static  Boolean  isValidStatus(String status){
-    return status.equals("unavailable") || status.equals("available");
+    return status.equals("disponible") || status.equals("indisponible");
 }
 }
